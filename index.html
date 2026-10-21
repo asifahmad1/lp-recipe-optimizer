@@ -1,0 +1,969 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linear Programming Recipe &amp; Cost Optimizer — Asif SaaS Studio</title>
+<style>
+  :root{
+    --emerald:#103E32; --emerald2:#0B3D2E; --lime:#DCF5B5; --lime2:#bfe58a;
+    --paper:#F7F8F2; --ink:#1d2b25; --muted:#5c6f66; --line:#d8e2d5;
+    --good:#1e7d46; --bad:#b3261e; --warn:#8a6d00; --card:#ffffff;
+  }
+  *{box-sizing:border-box}
+  html,body{margin:0;padding:0}
+  body{font-family:Georgia,'Times New Roman',serif;background:var(--paper);color:var(--ink);line-height:1.45}
+  header{background:linear-gradient(135deg,var(--emerald2),var(--emerald));color:var(--paper);padding:22px 18px 18px}
+  header .wrap{max-width:1020px;margin:0 auto}
+  .brand{color:var(--lime);letter-spacing:.28em;font-size:11px;text-transform:uppercase}
+  h1{margin:6px 0 4px;font-size:26px;font-weight:700;color:#fff}
+  header p{margin:0;color:#dcead9;font-size:14px;max-width:70ch}
+  .chip{display:inline-block;background:var(--lime);color:var(--emerald);border-radius:999px;padding:2px 10px;font-size:12px;margin-top:8px;font-weight:700}
+  main{max-width:1020px;margin:0 auto;padding:16px 14px 30px}
+  .card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:16px;margin-bottom:16px;box-shadow:0 1px 3px rgba(16,62,50,.06)}
+  .card h2{margin:0 0 4px;font-size:19px;color:var(--emerald)}
+  .card .sub{color:var(--muted);font-size:13px;margin:0 0 12px}
+  button{font-family:inherit;cursor:pointer;border-radius:8px;border:1px solid var(--emerald);background:#fff;color:var(--emerald);padding:7px 13px;font-size:14px}
+  button:hover{background:var(--lime)}
+  button.primary{background:var(--emerald);color:#fff;font-size:16px;padding:11px 22px;border-radius:10px}
+  button.primary:hover{background:#17503f}
+  button.preset{margin:0 8px 8px 0}
+  button.small{padding:4px 9px;font-size:13px}
+  button.danger{border-color:var(--bad);color:var(--bad)}
+  button.danger:hover{background:#fbe9e7}
+  .tblwrap{overflow-x:auto}
+  table{border-collapse:collapse;width:100%;font-size:13.5px}
+  th,td{border-bottom:1px solid var(--line);padding:5px 4px;text-align:left;vertical-align:middle}
+  th{color:var(--emerald);font-size:12.5px;white-space:nowrap}
+  td input[type=text],td input[type=number]{width:100%;min-width:58px;padding:5px 6px;border:1px solid var(--line);border-radius:6px;font-family:inherit;font-size:13.5px}
+  td input.name{min-width:118px}
+  td select{padding:5px 4px;border:1px solid var(--line);border-radius:6px;font-family:inherit}
+  td.solids{color:var(--muted);white-space:nowrap}
+  tr.rowbad td{background:#fdf0ef}
+  label.fl{display:block;font-size:13px;color:var(--emerald);margin-bottom:3px}
+  .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px 18px}
+  .pair{display:flex;gap:8px}
+  .pair input{flex:1}
+  input[type=number],input[type=text],textarea{padding:7px 8px;border:1px solid var(--line);border-radius:7px;font-family:inherit;font-size:14px;width:100%}
+  textarea{min-height:96px;font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12.5px}
+  .errors{display:none;background:#fdf0ef;border:1px solid #efc4c0;color:var(--bad);border-radius:8px;padding:10px 12px;font-size:13.5px;margin-top:10px}
+  .errors ul{margin:4px 0 0 18px;padding:0}
+  .okbox{display:none;background:#eef7ee;border:1px solid #bcd8bc;color:var(--good);border-radius:8px;padding:10px 12px;font-size:13.5px;margin-top:10px}
+  .banner{border-radius:10px;padding:13px 15px;font-size:16px;margin-bottom:12px}
+  .banner.good{background:#e7f4e4;border:1px solid var(--good);color:#14532d}
+  .banner.bad{background:#fdeceb;border:1px solid var(--bad);color:#7a1610}
+  .banner b{font-size:18px}
+  .ach td.mark,.ach th.mark{text-align:center;width:52px}
+  .pass{color:var(--good);font-weight:700}
+  .fail{color:var(--bad);font-weight:700}
+  .notes{font-size:13.5px;color:var(--ink)}
+  .notes li{margin-bottom:3px}
+  .hint{font-size:13px;color:var(--muted)}
+  .rowbtns{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+  .fileline{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-top:8px}
+  code{background:#eef3ea;padding:1px 5px;border-radius:4px;font-size:12.5px}
+  footer{max-width:1020px;margin:0 auto;padding:0 14px 26px;color:var(--muted);font-size:13px}
+  @media (max-width:640px){ h1{font-size:21px} .card{padding:12px} }
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap">
+    <div class="brand">Asif SaaS Studio</div>
+    <h1>Linear Programming Recipe &amp; Cost Optimizer</h1>
+    <p>Design the cheapest food formulation that still meets your nutritional targets. Enter ingredients, costs and bounds, set the composition you need, and a real linear-programming solver (two-phase simplex, running entirely in this page) finds the least-cost blend — with a full cost breakdown and compliance check.</p>
+    <span class="chip">R&amp;D &amp; Formulation Calculators · v1.0</span>
+  </div>
+</header>
+<main>
+
+  <section class="card">
+    <h2>Start from an example</h2>
+    <p class="sub">Preset data is <b>illustrative teaching data</b> — typical compositions and round-number prices, not quotations or lab results. Edit anything, then optimise.</p>
+    <button class="preset" data-preset="burger">Beef burger blend</button>
+    <button class="preset" data-preset="flour">Protein-enriched bread flour</button>
+    <button class="preset" data-preset="teaching">Teaching example — protein drink mix</button>
+  </section>
+
+  <section class="card">
+    <h2>1 · Ingredients</h2>
+    <p class="sub">Composition is per 100 g of ingredient as used. <b>Solids</b> = 100 − moisture (computed). Blank nutrient = 0; blank Min = 0; blank Max = 100. <b>Group A</b> marks ingredients counted by the “protein from Group A” constraint in step 2 (e.g. meats); Group B is a spare label. Protein + fat + moisture + carbs must not exceed 100% per ingredient.</p>
+    <div class="tblwrap">
+      <table id="ingTable">
+        <thead><tr>
+          <th>Ingredient</th><th>Group</th><th>Cost /kg</th><th>Protein %</th><th>Fat %</th>
+          <th>Moisture %</th><th>Carbs %</th><th>Solids %</th><th>Min %</th><th>Max %</th><th></th>
+        </tr></thead>
+        <tbody id="ingBody"></tbody>
+      </table>
+    </div>
+    <div class="rowbtns">
+      <button id="addIng" class="small">+ Add ingredient</button>
+      <span class="hint" id="ingCount"></span>
+    </div>
+    <div class="errors" id="ingErrors"></div>
+  </section>
+
+  <section class="card">
+    <h2>Import ingredients from CSV</h2>
+    <p class="sub">Paste rows or load a <code>.csv</code>/<code>.txt</code> file. Columns: <code>name,cost,protein,fat,moisture,carbs,min,max,group</code> — only the first five are required; the rest default (carbs 0, min 0, max 100, group None). A header row is optional; comma, semicolon and tab separators all work. Lines that cannot be read are reported by line number — never silently dropped.</p>
+    <textarea id="csvText" placeholder="name,cost,protein,fat,moisture,carbs,min,max,group&#10;Beef 80/20,8.50,20,20,60,0,0,100,A&#10;Ice water,0.05,0,0,100,0,0,25,None"></textarea>
+    <div class="fileline">
+      <input type="file" id="csvFile" accept=".csv,.txt,text/csv,text/plain" style="width:auto">
+      <button id="csvReplace" class="small">Replace ingredients</button>
+      <button id="csvAppend" class="small">Append ingredients</button>
+    </div>
+    <div class="okbox" id="csvStatus"></div>
+    <div class="errors" id="csvErrors"></div>
+  </section>
+
+  <section class="card">
+    <h2>2 · Targets &amp; constraints</h2>
+    <p class="sub">All targets are % of the finished blend. Leave a box blank for “no limit”. The blend always totals exactly 100%.</p>
+    <div class="grid">
+      <div><label class="fl">Protein % — min / max</label><div class="pair"><input type="number" id="tProteinMin" step="any" min="0" max="100" placeholder="min"><input type="number" id="tProteinMax" step="any" min="0" max="100" placeholder="max"></div></div>
+      <div><label class="fl">Fat % — min / max</label><div class="pair"><input type="number" id="tFatMin" step="any" min="0" max="100" placeholder="min"><input type="number" id="tFatMax" step="any" min="0" max="100" placeholder="max"></div></div>
+      <div><label class="fl">Moisture % — min / max</label><div class="pair"><input type="number" id="tMoistureMin" step="any" min="0" max="100" placeholder="min"><input type="number" id="tMoistureMax" step="any" min="0" max="100" placeholder="max"></div></div>
+      <div><label class="fl">Carbohydrate % — min / max (optional)</label><div class="pair"><input type="number" id="tCarbsMin" step="any" min="0" max="100" placeholder="min"><input type="number" id="tCarbsMax" step="any" min="0" max="100" placeholder="max"></div></div>
+      <div><label class="fl">Fat : solids ratio — min / max (optional)</label><div class="pair"><input type="number" id="tRatioMin" step="any" min="0" placeholder="min"><input type="number" id="tRatioMax" step="any" min="0" placeholder="max"></div></div>
+      <div><label class="fl">Protein from Group A ≥ % of total protein (optional)</label><input type="number" id="tShareMin" step="any" min="0" max="100" placeholder="e.g. 80"></div>
+      <div><label class="fl">Batch size (kg) for the recipe output</label><input type="number" id="tBatch" step="any" min="0" value="1"></div>
+    </div>
+    <div class="errors" id="tgtErrors"></div>
+    <div class="rowbtns" style="margin-top:14px">
+      <button id="solveBtn" class="primary">Optimise recipe</button>
+      <span class="hint">The solver minimises cost per kg subject to every bound and target above.</span>
+    </div>
+  </section>
+
+  <section class="card" id="resultsCard" style="display:none">
+    <h2>3 · Result</h2>
+    <div id="statusBanner"></div>
+    <div id="infeasibleBox" style="display:none"></div>
+    <div id="optimalBox" style="display:none">
+      <h3 style="margin:10px 0 6px;color:var(--emerald)">Optimised recipe</h3>
+      <div class="tblwrap"><table id="recipeTable">
+        <thead><tr><th>Ingredient</th><th>% of blend</th><th>kg in batch</th><th>Cost /kg</th><th>Cost contribution</th><th>% of cost</th></tr></thead>
+        <tbody id="recipeBody"></tbody>
+        <tfoot id="recipeFoot"></tfoot>
+      </table></div>
+      <h3 style="margin:16px 0 6px;color:var(--emerald)">Achieved composition &amp; compliance</h3>
+      <p class="sub" style="margin-bottom:8px">Recomputed from the recipe above — not taken from the solver — and checked against your targets.</p>
+      <div class="tblwrap"><table class="ach">
+        <thead><tr><th>Measure</th><th>Achieved</th><th>Target</th><th class="mark">Meets?</th></tr></thead>
+        <tbody id="achBody"></tbody>
+      </table></div>
+      <div id="bindingBox" style="margin-top:12px"></div>
+      <div class="rowbtns">
+        <button id="copyBtn" class="small">Copy summary</button>
+        <button id="dlBtn" class="small">Download recipe CSV</button>
+        <span class="hint" id="copyNote"></span>
+      </div>
+    </div>
+  </section>
+
+  <section class="card">
+    <h2>How it works &amp; honest limits</h2>
+    <p class="notes">The optimiser builds a linear programme — one variable per ingredient (its % of the blend), the blend total fixed at 100%, one linear constraint per target — and solves it exactly with a two-phase simplex method (Bland’s rule, so it cannot cycle). Cost and proximate composition (protein, fat, moisture, carbs) genuinely do blend linearly, so for the numbers you enter, the answer is the true least-cost blend.</p>
+    <p class="notes"><b>What LP cannot do:</b> it is not a sensory or texture model. Flavour, bite, colour and processing behaviour enter only through the numeric constraints you set (bounds, ratios, group shares). Preset compositions and prices are illustrative teaching values — commercial formulation needs verified lab composition for your actual raw materials and current supplier prices. If the solver reports <i>infeasible</i>, no blend of the listed ingredients within their bounds can meet all targets at once; the app shows which targets fail simple achievability checks to help you find the clash. Everything runs in this page — no server, no account, no data leaves your browser.</p>
+  </section>
+
+</main>
+<footer>Linear Programming Recipe &amp; Cost Optimizer v1.0 · Asif SaaS Studio · By Dr. Asif Ahmad</footer>
+
+<script>
+/* ================= PURE CORE — no DOM below this line ================= */
+function pcNum(v){ var n = parseFloat(v); return isFinite(n) ? n : 0; }
+function pcBlank(v){ return v === null || v === undefined || (typeof v === 'string' && v.trim() === ''); }
+function pcFmt(x, d){
+  if (d === undefined) d = 2;
+  if (!isFinite(x)) return '—';
+  var s = (+x).toFixed(d);
+  if (s.indexOf('.') >= 0) s = s.replace(/0+$/, '').replace(/\.$/, '');
+  if (s === '-0') s = '0';
+  return s;
+}
+
+/* Two-phase simplex with Bland's rule.
+   minimize c·x  subject to  A[i]·x (senses[i]) b[i],  x >= 0.
+   senses entries: '<=', '>=' or '='.  Returns {status, x, objective}
+   with status 'optimal' | 'infeasible' | 'unbounded' | 'error'. */
+function simplexMin(c, A, senses, b){
+  var EPS = 1e-9, FTOL = 1e-7;
+  var n = c.length, m = A.length, i, j;
+  if (m === 0){
+    for (j = 0; j < n; j++) if (c[j] < -EPS) return { status: 'unbounded' };
+    var x0 = []; for (j = 0; j < n; j++) x0.push(0);
+    return { status: 'optimal', x: x0, objective: 0 };
+  }
+  // Normalise rows so every RHS >= 0 (flipping the sense when negating).
+  var rows = [], sns = [], rhs = [];
+  for (i = 0; i < m; i++){
+    var r = [], s = senses[i], v = +b[i] || 0;
+    for (j = 0; j < n; j++) r.push(+A[i][j] || 0);
+    if (v < 0){
+      v = -v;
+      s = (s === '<=') ? '>=' : (s === '>=') ? '<=' : '=';
+      for (j = 0; j < n; j++) r[j] = -r[j];
+    }
+    rows.push(r); sns.push(s); rhs.push(v);
+  }
+  // Column layout: [x vars | slacks/surpluses | artificials]
+  var slackCol = [], artCol = [], basis = new Array(m), isArt = [];
+  var N = n;
+  for (i = 0; i < m; i++){
+    slackCol.push(-1); artCol.push(-1);
+    if (sns[i] === '<='){ slackCol[i] = N++; }
+    else if (sns[i] === '>='){ slackCol[i] = N++; artCol[i] = N++; }
+    else { artCol[i] = N++; }
+  }
+  for (j = 0; j < N; j++) isArt.push(false);
+  var T = [];
+  for (i = 0; i < m; i++){
+    var row = new Array(N + 1).fill(0);
+    for (j = 0; j < n; j++) row[j] = rows[i][j];
+    if (slackCol[i] >= 0) row[slackCol[i]] = (sns[i] === '<=') ? 1 : -1;
+    if (artCol[i] >= 0){ row[artCol[i]] = 1; isArt[artCol[i]] = true; basis[i] = artCol[i]; }
+    else basis[i] = slackCol[i];
+    row[N] = rhs[i];
+    T.push(row);
+  }
+  function pivot(pr, pc){
+    var prow = T[pr], piv = prow[pc], jj, ii;
+    for (jj = 0; jj < prow.length; jj++) prow[jj] /= piv;
+    for (ii = 0; ii < T.length; ii++){
+      if (ii === pr) continue;
+      var f = T[ii][pc];
+      if (f !== 0){
+        var rr = T[ii];
+        for (jj = 0; jj < rr.length; jj++) rr[jj] -= f * prow[jj];
+      }
+    }
+    basis[pr] = pc;
+  }
+  function runPhase(cost){
+    var iter = 0, ii, jj;
+    while (true){
+      if (++iter > 20000) return 'error';
+      var inBasis = {};
+      for (ii = 0; ii < basis.length; ii++) inBasis[basis[ii]] = true;
+      var enter = -1; // Bland: smallest index with negative reduced cost
+      for (jj = 0; jj < N; jj++){
+        if (inBasis[jj]) continue;
+        var rc = cost[jj];
+        for (ii = 0; ii < T.length; ii++) rc -= cost[basis[ii]] * T[ii][jj];
+        if (rc < -1e-9){ enter = jj; break; }
+      }
+      if (enter === -1) return 'optimal';
+      var leave = -1, bestRatio = Infinity, bestBasis = Infinity;
+      for (ii = 0; ii < T.length; ii++){
+        var a = T[ii][enter];
+        if (a > EPS){
+          var rv = T[ii][N];
+          if (rv < 0 && rv > -1e-7) rv = 0;
+          var ratio = rv / a;
+          if (ratio < bestRatio - 1e-9 || (Math.abs(ratio - bestRatio) <= 1e-9 && basis[ii] < bestBasis)){
+            bestRatio = ratio; bestBasis = basis[ii]; leave = ii;
+          }
+        }
+      }
+      if (leave === -1) return 'unbounded';
+      pivot(leave, enter);
+    }
+  }
+  var hasArt = false;
+  for (i = 0; i < m; i++) if (artCol[i] >= 0) hasArt = true;
+  if (hasArt){
+    var cost1 = [];
+    for (j = 0; j < N; j++) cost1.push(isArt[j] ? 1 : 0);
+    var st1 = runPhase(cost1);
+    if (st1 !== 'optimal') return { status: st1 };
+    var obj1 = 0;
+    for (i = 0; i < T.length; i++) obj1 += cost1[basis[i]] * T[i][N];
+    if (obj1 > FTOL) return { status: 'infeasible' };
+    // Drive any remaining artificial basics out on a real column; rows that
+    // are zero in every real column are redundant and dropped.
+    var keepRows = [];
+    for (i = 0; i < T.length; i++){
+      if (isArt[basis[i]]){
+        var inB = {};
+        for (var q = 0; q < basis.length; q++) inB[basis[q]] = true;
+        var pc = -1;
+        for (j = 0; j < N; j++){
+          if (isArt[j] || inB[j]) continue;
+          if (Math.abs(T[i][j]) > 1e-7){ pc = j; break; }
+        }
+        if (pc >= 0){ pivot(i, pc); keepRows.push(i); }
+      } else keepRows.push(i);
+    }
+    // Rebuild the tableau without artificial columns.
+    var colMap = {}, newN = 0;
+    for (j = 0; j < N; j++) if (!isArt[j]) colMap[j] = newN++;
+    var T2 = [], basis2 = [];
+    for (var kr = 0; kr < keepRows.length; kr++){
+      var ri = keepRows[kr];
+      var nr = new Array(newN + 1).fill(0);
+      for (var oj = 0; oj < N; oj++) if (!isArt[oj]) nr[colMap[oj]] = T[ri][oj];
+      nr[newN] = T[ri][N];
+      T2.push(nr); basis2.push(colMap[basis[ri]]);
+    }
+    T = T2; basis = basis2; N = newN;
+  }
+  var cost2 = new Array(N).fill(0);
+  for (j = 0; j < n; j++) cost2[j] = c[j];
+  var st2 = runPhase(cost2);
+  if (st2 !== 'optimal') return { status: st2 };
+  var x = new Array(n).fill(0);
+  for (i = 0; i < T.length; i++){
+    if (basis[i] < n){
+      var val = T[i][N];
+      x[basis[i]] = (Math.abs(val) < 1e-7) ? 0 : val;
+    }
+  }
+  var objective = 0;
+  for (j = 0; j < n; j++) objective += c[j] * x[j];
+  return { status: 'optimal', x: x, objective: objective };
+}
+
+/* Exact min/max of sum(coeffs_i * x_i)/100 subject to sum(x)=100 and
+   lbs <= x <= ubs — a greedy fill, exact for a single linear form. */
+function achievableRange(coeffs, lbs, ubs){
+  var sumLb = 0, i;
+  for (i = 0; i < coeffs.length; i++) sumLb += lbs[i];
+  var rem = 100 - sumLb;
+  if (rem < 0) rem = 0;
+  function extreme(dir){
+    var x = lbs.slice();
+    var order = coeffs.map(function(cv, idx){ return idx; });
+    order.sort(function(a, b2){ return dir * (coeffs[a] - coeffs[b2]); });
+    var r = rem;
+    for (var k = 0; k < order.length && r > 1e-12; k++){
+      var idx = order[k];
+      var add = Math.min(ubs[idx] - lbs[idx], r);
+      if (add > 0){ x[idx] += add; r -= add; }
+    }
+    var s = 0;
+    for (var q = 0; q < coeffs.length; q++) s += coeffs[q] * x[q];
+    return s / 100;
+  }
+  return { min: extreme(1), max: extreme(-1) };
+}
+
+function computeAchieved(ings, x){
+  var P = 0, F = 0, M = 0, C = 0, S = 0, PA = 0, i;
+  for (i = 0; i < ings.length; i++){
+    var xi = x[i];
+    P += ings[i].protein * xi;
+    F += ings[i].fat * xi;
+    M += ings[i].moisture * xi;
+    C += ings[i].carbs * xi;
+    S += (100 - ings[i].moisture) * xi;
+    if (ings[i].group === 'A') PA += ings[i].protein * xi;
+  }
+  P /= 100; F /= 100; M /= 100; C /= 100; S /= 100; PA /= 100;
+  return {
+    protein: P, fat: F, moisture: M, carbs: C, solids: S,
+    ratio: (S > 1e-9) ? F / S : (F > 1e-9 ? Infinity : 0),
+    groupAProtein: PA,
+    groupAShare: (P > 1e-9) ? (PA / P * 100) : null
+  };
+}
+
+var NUTRIENTS = ['protein', 'fat', 'moisture', 'carbs'];
+var NUTRIENT_NAMES = { protein: 'Protein', fat: 'Fat', moisture: 'Moisture', carbs: 'Carbohydrate' };
+
+/* Build the LP from a plain problem object and solve it.
+   problem = { ingredients: [{name,cost,protein,fat,moisture,carbs,min,max,group}],
+               targets: {proteinMin,proteinMax,fatMin,fatMax,moistureMin,moistureMax,
+                         carbsMin,carbsMax,ratioMin,ratioMax,groupAShareMin},
+               batchKg }
+   Bounds are folded in exactly: x = lb + y, y >= 0, y <= ub - lb. */
+function buildAndSolve(prob){
+  var ings = prob.ingredients.map(function(g){
+    return {
+      name: String(g.name || ''), cost: pcNum(g.cost),
+      protein: pcNum(g.protein), fat: pcNum(g.fat),
+      moisture: pcNum(g.moisture), carbs: pcNum(g.carbs),
+      min: pcBlank(g.min) ? 0 : pcNum(g.min),
+      max: pcBlank(g.max) ? 100 : pcNum(g.max),
+      group: (g.group === 'A' || g.group === 'B') ? g.group : 'None'
+    };
+  });
+  var t = prob.targets || {};
+  function tgt(k){ return pcBlank(t[k]) ? null : pcNum(t[k]); }
+  var n = ings.length, i;
+  var lbs = ings.map(function(g){ return g.min; });
+  var ubs = ings.map(function(g){ return g.max; });
+  var sumLb = 0, sumUb = 0;
+  for (i = 0; i < n; i++){ sumLb += lbs[i]; sumUb += ubs[i]; }
+  // ---- feasibility pre-checks (exact for single forms) ----
+  var pre = [];
+  if (sumLb > 100 + 1e-7) pre.push('Ingredient minimums total ' + pcFmt(sumLb) + '% — more than the whole 100% batch. Lower some minimums.');
+  if (sumUb < 100 - 1e-7) pre.push('Ingredient maximums total only ' + pcFmt(sumUb) + '% — the blend cannot reach 100%. Raise some maximums.');
+  var ranges = {};
+  NUTRIENTS.forEach(function(nut){
+    var coeffs = ings.map(function(g){ return g[nut]; });
+    var rg = achievableRange(coeffs, lbs, ubs);
+    ranges[nut] = rg;
+    var mn = tgt(nut + 'Min'), mx = tgt(nut + 'Max');
+    if (mn !== null && mn > rg.max + 1e-6) pre.push(NUTRIENT_NAMES[nut] + ' minimum target ' + pcFmt(mn) + '% is above the maximum achievable ' + pcFmt(rg.max) + '% from these ingredients within their bounds.');
+    if (mx !== null && mx < rg.min - 1e-6) pre.push(NUTRIENT_NAMES[nut] + ' maximum target ' + pcFmt(mx) + '% is below the minimum achievable ' + pcFmt(rg.min) + '% from these ingredients within their bounds.');
+  });
+  if (pre.length) return { status: 'infeasible', preChecks: pre, ranges: ranges, ingredients: ings };
+  // ---- build LP in y-space ----
+  var A = [], senses = [], b = [];
+  function addRow(coeffs, sense, rhs){ A.push(coeffs); senses.push(sense); b.push(rhs); }
+  function baseOf(coeffs){ var s = 0; for (var q = 0; q < n; q++) s += coeffs[q] * lbs[q]; return s; }
+  addRow(ings.map(function(){ return 1; }), '=', 100 - sumLb);
+  NUTRIENTS.forEach(function(nut){
+    var coeffs = ings.map(function(g){ return g[nut]; });
+    var base = baseOf(coeffs);
+    var mn = tgt(nut + 'Min'), mx = tgt(nut + 'Max');
+    if (mn !== null) addRow(coeffs, '>=', 100 * mn - base);
+    if (mx !== null) addRow(coeffs, '<=', 100 * mx - base);
+  });
+  function ratioCoeffs(r){ return ings.map(function(g){ return g.fat - r * (100 - g.moisture); }); }
+  var rMax = tgt('ratioMax'), rMin = tgt('ratioMin');
+  if (rMax !== null){ var dMax = ratioCoeffs(rMax); addRow(dMax, '<=', -baseOf(dMax)); }
+  if (rMin !== null){ var dMin = ratioCoeffs(rMin); addRow(dMin, '>=', -baseOf(dMin)); }
+  var share = tgt('groupAShareMin');
+  if (share !== null && share > 0){
+    var gc = ings.map(function(g){ return (g.group === 'A' ? g.protein : 0) - (share / 100) * g.protein; });
+    addRow(gc, '>=', -baseOf(gc));
+  }
+  for (i = 0; i < n; i++){
+    var ub = ubs[i] - lbs[i];
+    if (ub < 100 - 1e-12){
+      var row = new Array(n).fill(0);
+      row[i] = 1;
+      addRow(row, '<=', ub);
+    }
+  }
+  var c = ings.map(function(g){ return g.cost; });
+  var res = simplexMin(c, A, senses, b);
+  if (res.status !== 'optimal'){
+    return { status: res.status, preChecks: [], ranges: ranges, ingredients: ings };
+  }
+  var x = res.x.map(function(y, idx){
+    var v = y + lbs[idx];
+    return Math.abs(v) < 1e-9 ? 0 : v;
+  });
+  var costPerKg = 0;
+  for (i = 0; i < n; i++) costPerKg += c[i] * x[i];
+  costPerKg /= 100;
+  var batchKg = pcBlank(prob.batchKg) ? 1 : pcNum(prob.batchKg);
+  if (!(batchKg > 0)) batchKg = 1;
+  var ach = computeAchieved(ings, x);
+  // ---- compliance + binding, recomputed from x ----
+  var checks = [];
+  NUTRIENTS.forEach(function(nut){
+    var mn = tgt(nut + 'Min'), mx = tgt(nut + 'Max');
+    if (mn === null && mx === null) return;
+    var v = ach[nut];
+    checks.push({
+      label: NUTRIENT_NAMES[nut], value: v, min: mn, max: mx,
+      ok: (mn === null || v >= mn - 1e-6) && (mx === null || v <= mx + 1e-6),
+      binding: (mn !== null && Math.abs(v - mn) <= 1e-4) || (mx !== null && Math.abs(v - mx) <= 1e-4)
+    });
+  });
+  if (rMin !== null || rMax !== null){
+    checks.push({
+      label: 'Fat : solids ratio', value: ach.ratio, min: rMin, max: rMax, isRatio: true,
+      ok: (rMin === null || ach.ratio >= rMin - 1e-6) && (rMax === null || ach.ratio <= rMax + 1e-6),
+      binding: (rMin !== null && Math.abs(ach.ratio - rMin) <= 1e-4) || (rMax !== null && Math.abs(ach.ratio - rMax) <= 1e-4)
+    });
+  }
+  if (share !== null && share > 0){
+    var sv = ach.groupAShare;
+    checks.push({
+      label: 'Group A protein share', value: sv, min: share, max: null, isShare: true,
+      ok: sv !== null && sv >= share - 1e-4,
+      binding: sv !== null && Math.abs(sv - share) <= 1e-3
+    });
+  }
+  var boundNotes = [];
+  for (i = 0; i < n; i++){
+    if (lbs[i] > 0 && Math.abs(x[i] - lbs[i]) <= 1e-6) boundNotes.push(ings[i].name + ' sits at its minimum (' + pcFmt(lbs[i]) + '%).');
+    if (ubs[i] < 100 && Math.abs(x[i] - ubs[i]) <= 1e-6) boundNotes.push(ings[i].name + ' sits at its maximum (' + pcFmt(ubs[i]) + '%).');
+  }
+  return {
+    status: 'optimal', x: x, costPerKg: costPerKg, totalCost: costPerKg * batchKg,
+    batchKg: batchKg, achieved: ach, checks: checks, boundNotes: boundNotes,
+    ingredients: ings, ranges: ranges
+  };
+}
+
+/* Tolerant ingredient CSV parser.
+   Columns: name,cost,protein,fat,moisture[,carbs,min,max,group].
+   Comma/semicolon/tab separated, optional header row, blank lines skipped.
+   Unreadable lines are reported with their 1-based line number. */
+function parseIngredientsCSV(text){
+  var out = { rows: [], errors: [] };
+  if (!text || !String(text).trim()){
+    out.errors.push({ line: 0, message: 'No data — the input was empty.' });
+    return out;
+  }
+  var lines = String(text).replace(/\r\n?/g, '\n').split('\n');
+  var firstContentSeen = false;
+  for (var li = 0; li < lines.length; li++){
+    var raw = lines[li];
+    if (!raw.trim()) continue;
+    var delim = raw.indexOf('\t') >= 0 ? '\t' : (raw.indexOf(';') >= 0 ? ';' : ',');
+    var f = raw.split(delim).map(function(s){ return s.trim(); });
+    if (!firstContentSeen){
+      firstContentSeen = true;
+      if (f.length >= 2 && f[1] !== '' && isNaN(parseFloat(f[1]))) continue; // header row
+    }
+    var lineNo = li + 1;
+    if (f.length < 5){
+      out.errors.push({ line: lineNo, message: 'Expected at least 5 columns (name,cost,protein,fat,moisture) — found ' + f.length + '.' });
+      continue;
+    }
+    if (!f[0]){
+      out.errors.push({ line: lineNo, message: 'Missing ingredient name.' });
+      continue;
+    }
+    var nums = [], bad = -1, k;
+    for (k = 1; k <= 4; k++){
+      var v = parseFloat(f[k]);
+      if (!isFinite(v)){ bad = k; break; }
+      nums.push(v);
+    }
+    if (bad >= 0){
+      out.errors.push({ line: lineNo, message: 'Column ' + (bad + 1) + ' ("' + f[bad] + '") is not a number.' });
+      continue;
+    }
+    function opt(idx, dflt){
+      if (f.length > idx && f[idx] !== '' && f[idx] !== undefined){
+        var v2 = parseFloat(f[idx]);
+        return isFinite(v2) ? v2 : dflt;
+      }
+      return dflt;
+    }
+    var grp = 'None';
+    if (f.length > 8 && f[8]){
+      var g = f[8].toUpperCase();
+      if (g === 'A' || g === 'B') grp = g;
+    }
+    out.rows.push({
+      name: f[0], cost: nums[0], protein: nums[1], fat: nums[2], moisture: nums[3],
+      carbs: opt(5, 0), min: opt(6, 0), max: opt(7, 100), group: grp, line: lineNo
+    });
+  }
+  return out;
+}
+
+/* Presets — illustrative teaching data (typical compositions, round prices). */
+var PRESETS = {
+  burger: {
+    label: 'Beef burger blend',
+    batchKg: 100,
+    ingredients: [
+      { name: 'Beef 80/20', cost: 8.50, protein: 20, fat: 20, moisture: 60, carbs: 0, min: 0, max: 100, group: 'A' },
+      { name: 'Beef trim 50CL', cost: 5.00, protein: 13, fat: 50, moisture: 36, carbs: 0, min: 0, max: 100, group: 'A' },
+      { name: 'Pork backfat', cost: 2.50, protein: 3, fat: 88, moisture: 9, carbs: 0, min: 0, max: 60, group: 'A' },
+      { name: 'Rusk / breadcrumb', cost: 1.20, protein: 10, fat: 2, moisture: 10, carbs: 70, min: 0, max: 12, group: 'None' },
+      { name: 'Ice water', cost: 0.05, protein: 0, fat: 0, moisture: 100, carbs: 0, min: 0, max: 25, group: 'None' },
+      { name: 'Soy protein concentrate', cost: 3.80, protein: 65, fat: 1, moisture: 6, carbs: 20, min: 0, max: 8, group: 'None' }
+    ],
+    targets: { proteinMin: 14, fatMax: 22, moistureMax: 68, groupAShareMin: 80 }
+  },
+  flour: {
+    label: 'Protein-enriched bread flour',
+    batchKg: 100,
+    ingredients: [
+      { name: 'Wheat flour', cost: 0.60, protein: 11, fat: 1.2, moisture: 12, carbs: 72, min: 0, max: 100, group: 'None' },
+      { name: 'Vital wheat gluten', cost: 3.20, protein: 75, fat: 1, moisture: 8, carbs: 10, min: 0, max: 100, group: 'None' },
+      { name: 'Defatted soy flour', cost: 1.10, protein: 52, fat: 1.5, moisture: 8, carbs: 30, min: 0, max: 15, group: 'None' }
+    ],
+    targets: { proteinMin: 16, moistureMax: 13 }
+  },
+  teaching: {
+    label: 'Teaching example — protein drink mix',
+    batchKg: 10,
+    ingredients: [
+      { name: 'Water', cost: 0.02, protein: 0, fat: 0, moisture: 100, carbs: 0, min: 0, max: 100, group: 'None' },
+      { name: 'Sugar', cost: 0.80, protein: 0, fat: 0, moisture: 0, carbs: 100, min: 0, max: 100, group: 'None' },
+      { name: 'Skim milk powder', cost: 4.50, protein: 36, fat: 1, moisture: 3, carbs: 52, min: 0, max: 100, group: 'None' }
+    ],
+    targets: { proteinMin: 10, moistureMax: 20 }
+  }
+};
+/*PURE-CORE-END*/
+
+/* ================= UI layer ================= */
+(function(){
+  'use strict';
+  function $(id){ return document.getElementById(id); }
+  function esc(s){ return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+  function money(v){ return isFinite(v) ? (+v).toFixed(2) : '—'; }
+  function numOrBlank(v){ return pcBlank(v) ? '' : String(v); }
+
+  var MAXING = 12, MINING = 2;
+  var ingState = [];
+  var lastResult = null;
+
+  function blankIng(){
+    return { name: '', group: 'None', cost: '', protein: '', fat: '', moisture: '', carbs: '', min: '', max: '' };
+  }
+  function ingFromData(d){
+    return {
+      name: d.name || '', group: d.group || 'None',
+      cost: numOrBlank(d.cost), protein: numOrBlank(d.protein), fat: numOrBlank(d.fat),
+      moisture: numOrBlank(d.moisture), carbs: numOrBlank(d.carbs),
+      min: numOrBlank(d.min), max: numOrBlank(d.max)
+    };
+  }
+
+  var FIELDS = ['name', 'group', 'cost', 'protein', 'fat', 'moisture', 'carbs', 'min', 'max'];
+  function renderIngTable(){
+    var tb = $('ingBody');
+    var html = '';
+    ingState.forEach(function(g, i){
+      var solids = 100 - (pcBlank(g.moisture) ? 0 : pcNum(g.moisture));
+      html += '<tr data-i="' + i + '">'
+        + '<td><input type="text" class="name" data-f="name" value="' + esc(g.name) + '" placeholder="Ingredient ' + (i + 1) + '"></td>'
+        + '<td><select data-f="group">'
+        +   ['None', 'A', 'B'].map(function(o){ return '<option value="' + o + '"' + (g.group === o ? ' selected' : '') + '>' + o + '</option>'; }).join('')
+        + '</select></td>'
+        + '<td><input type="number" step="any" min="0" data-f="cost" value="' + esc(g.cost) + '"></td>'
+        + '<td><input type="number" step="any" min="0" max="100" data-f="protein" value="' + esc(g.protein) + '"></td>'
+        + '<td><input type="number" step="any" min="0" max="100" data-f="fat" value="' + esc(g.fat) + '"></td>'
+        + '<td><input type="number" step="any" min="0" max="100" data-f="moisture" value="' + esc(g.moisture) + '"></td>'
+        + '<td><input type="number" step="any" min="0" max="100" data-f="carbs" value="' + esc(g.carbs) + '"></td>'
+        + '<td class="solids" data-solids>' + pcFmt(solids) + '</td>'
+        + '<td><input type="number" step="any" min="0" max="100" data-f="min" value="' + esc(g.min) + '" placeholder="0"></td>'
+        + '<td><input type="number" step="any" min="0" max="100" data-f="max" value="' + esc(g.max) + '" placeholder="100"></td>'
+        + '<td><button class="small danger" data-remove="' + i + '" title="Remove ingredient">✕</button></td>'
+        + '</tr>';
+    });
+    tb.innerHTML = html;
+    $('ingCount').textContent = ingState.length + ' ingredient' + (ingState.length === 1 ? '' : 's') + ' (min ' + MINING + ', max ' + MAXING + ')';
+  }
+
+  $('ingBody').addEventListener('input', function(ev){
+    var el = ev.target, tr = el.closest('tr');
+    if (!tr) return;
+    var i = +tr.getAttribute('data-i'), f = el.getAttribute('data-f');
+    if (!f || !ingState[i]) return;
+    ingState[i][f] = el.value;
+    if (f === 'moisture'){
+      var cell = tr.querySelector('[data-solids]');
+      if (cell) cell.textContent = pcFmt(100 - (pcBlank(el.value) ? 0 : pcNum(el.value)));
+    }
+  });
+  $('ingBody').addEventListener('change', function(ev){
+    var el = ev.target, tr = el.closest('tr');
+    if (!tr || el.tagName !== 'SELECT') return;
+    var i = +tr.getAttribute('data-i');
+    if (ingState[i]) ingState[i].group = el.value;
+  });
+  $('ingBody').addEventListener('click', function(ev){
+    var btn = ev.target.closest('[data-remove]');
+    if (!btn) return;
+    if (ingState.length <= MINING){ showErrors('ingErrors', ['Keep at least ' + MINING + ' ingredients.']); return; }
+    ingState.splice(+btn.getAttribute('data-remove'), 1);
+    hideBox('ingErrors');
+    renderIngTable();
+  });
+  $('addIng').addEventListener('click', function(){
+    if (ingState.length >= MAXING){ showErrors('ingErrors', ['At most ' + MAXING + ' ingredients in this version.']); return; }
+    ingState.push(blankIng());
+    hideBox('ingErrors');
+    renderIngTable();
+  });
+
+  function showErrors(id, errs){
+    var box = $(id);
+    if (!errs.length){ box.style.display = 'none'; box.innerHTML = ''; return; }
+    box.innerHTML = '<b>Please fix:</b><ul>' + errs.map(function(e){ return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>';
+    box.style.display = 'block';
+  }
+  function hideBox(id){ var b = $(id); b.style.display = 'none'; b.innerHTML = ''; }
+  function showOk(id, msg){
+    var box = $(id);
+    box.textContent = msg;
+    box.style.display = 'block';
+  }
+
+  /* ---------- targets ---------- */
+  var TGT_IDS = {
+    proteinMin: 'tProteinMin', proteinMax: 'tProteinMax',
+    fatMin: 'tFatMin', fatMax: 'tFatMax',
+    moistureMin: 'tMoistureMin', moistureMax: 'tMoistureMax',
+    carbsMin: 'tCarbsMin', carbsMax: 'tCarbsMax',
+    ratioMin: 'tRatioMin', ratioMax: 'tRatioMax',
+    groupAShareMin: 'tShareMin'
+  };
+  function readTargets(){
+    var t = {};
+    Object.keys(TGT_IDS).forEach(function(k){ t[k] = $(TGT_IDS[k]).value; });
+    return t;
+  }
+  function writeTargets(t){
+    Object.keys(TGT_IDS).forEach(function(k){
+      $(TGT_IDS[k]).value = (t && !pcBlank(t[k])) ? t[k] : '';
+    });
+  }
+
+  /* ---------- validation + gather ---------- */
+  function gather(){
+    var errors = [];
+    if (ingState.length < MINING) errors.push('Add at least ' + MINING + ' ingredients.');
+    if (ingState.length > MAXING) errors.push('At most ' + MAXING + ' ingredients.');
+    var ings = ingState.map(function(g, i){
+      var label = 'Row ' + (i + 1) + (g.name ? ' (' + g.name + ')' : '');
+      if (!String(g.name || '').trim()) errors.push('Row ' + (i + 1) + ': ingredient name is empty.');
+      if (pcBlank(g.cost)) errors.push(label + ': cost is required.');
+      else if (!isFinite(parseFloat(g.cost)) || parseFloat(g.cost) < 0) errors.push(label + ': cost must be a number ≥ 0.');
+      var sum = 0;
+      ['protein', 'fat', 'moisture', 'carbs'].forEach(function(f){
+        var v = g[f];
+        if (pcBlank(v)) return;
+        var nv = parseFloat(v);
+        if (!isFinite(nv) || nv < 0 || nv > 100) errors.push(label + ': ' + f + ' must be between 0 and 100.');
+        else sum += nv;
+      });
+      if (sum > 100.5) errors.push(label + ': protein + fat + moisture + carbs = ' + pcFmt(sum) + '% — over 100%. Check the composition.');
+      ['min', 'max'].forEach(function(f){
+        var v = g[f];
+        if (pcBlank(v)) return;
+        var nv = parseFloat(v);
+        if (!isFinite(nv) || nv < 0 || nv > 100) errors.push(label + ': ' + f + ' % must be between 0 and 100.');
+      });
+      if (!pcBlank(g.min) && !pcBlank(g.max) && parseFloat(g.min) > parseFloat(g.max))
+        errors.push(label + ': minimum % is greater than maximum %.');
+      return {
+        name: String(g.name || '').trim(), group: g.group,
+        cost: g.cost, protein: g.protein, fat: g.fat, moisture: g.moisture,
+        carbs: g.carbs, min: g.min, max: g.max
+      };
+    });
+    var tRaw = readTargets(), targets = {}, tErr = [];
+    Object.keys(tRaw).forEach(function(k){
+      var v = tRaw[k];
+      if (pcBlank(v)){ targets[k] = null; return; }
+      var nv = parseFloat(v);
+      var isRatio = (k === 'ratioMin' || k === 'ratioMax');
+      if (!isFinite(nv) || nv < 0 || (!isRatio && nv > 100) || (isRatio && nv > 10)){
+        tErr.push('Target "' + k + '" must be a number between 0 and ' + (isRatio ? '10' : '100') + '.');
+        targets[k] = null;
+      } else targets[k] = nv;
+    });
+    [['proteinMin', 'proteinMax', 'Protein'], ['fatMin', 'fatMax', 'Fat'],
+     ['moistureMin', 'moistureMax', 'Moisture'], ['carbsMin', 'carbsMax', 'Carbohydrate'],
+     ['ratioMin', 'ratioMax', 'Fat:solids ratio']].forEach(function(p){
+      if (targets[p[0]] !== null && targets[p[1]] !== null && targets[p[0]] > targets[p[1]])
+        tErr.push(p[2] + ' minimum target is greater than its maximum target.');
+    });
+    var batchRaw = $('tBatch').value;
+    var batchKg = pcBlank(batchRaw) ? 1 : parseFloat(batchRaw);
+    if (!isFinite(batchKg) || batchKg <= 0){ tErr.push('Batch size must be a number greater than 0.'); batchKg = 1; }
+    showErrors('tgtErrors', tErr);
+    return { problem: { ingredients: ings, targets: targets, batchKg: batchKg }, errors: errors };
+  }
+
+  /* ---------- solve + render ---------- */
+  function targetText(chk){
+    if (!chk) return '—';
+    if (chk.min !== null && chk.max !== null) return pcFmt(chk.min) + ' – ' + pcFmt(chk.max);
+    if (chk.min !== null) return '≥ ' + pcFmt(chk.min);
+    if (chk.max !== null) return '≤ ' + pcFmt(chk.max);
+    return '—';
+  }
+  function solve(){
+    var g = gather();
+    showErrors('ingErrors', g.errors);
+    if (g.errors.length){ $('resultsCard').style.display = 'none'; return; }
+    var res = buildAndSolve(g.problem);
+    lastResult = res;
+    renderResult(res);
+  }
+
+  function renderResult(res){
+    $('resultsCard').style.display = 'block';
+    var banner = $('statusBanner'), inf = $('infeasibleBox'), opt = $('optimalBox');
+    if (res.status === 'optimal'){
+      inf.style.display = 'none'; opt.style.display = 'block';
+      banner.className = 'banner good';
+      banner.innerHTML = '<b>OPTIMAL</b> — least possible cost <b>' + money(res.costPerKg) + ' per kg</b>'
+        + ' · total <b>' + money(res.totalCost) + '</b> for a ' + pcFmt(res.batchKg) + ' kg batch.';
+      // recipe table (descending %)
+      var order = res.x.map(function(v, i){ return i; }).sort(function(a, b2){ return res.x[b2] - res.x[a]; });
+      var rowsHtml = '', totPct = 0, totKg = 0, totCost = 0;
+      order.forEach(function(i){
+        var pct = res.x[i], kg = pct / 100 * res.batchKg;
+        var contrib = res.ingredients[i].cost * kg;
+        totPct += pct; totKg += kg; totCost += contrib;
+        rowsHtml += '<tr><td>' + esc(res.ingredients[i].name) + '</td><td>' + pcFmt(pct) + '</td><td>' + pcFmt(kg) + '</td>'
+          + '<td>' + money(res.ingredients[i].cost) + '</td><td>' + money(contrib) + '</td>'
+          + '<td>' + (res.totalCost > 0 ? pcFmt(contrib / res.totalCost * 100) : '0') + '</td></tr>';
+      });
+      $('recipeBody').innerHTML = rowsHtml;
+      $('recipeFoot').innerHTML = '<tr style="font-weight:700"><td>Total</td><td>' + pcFmt(totPct) + '</td><td>' + pcFmt(totKg) + '</td><td></td><td>' + money(totCost) + '</td><td>100</td></tr>';
+      // achieved table
+      var byLabel = {};
+      res.checks.forEach(function(chk){ byLabel[chk.label] = chk; });
+      var ach = res.achieved;
+      var achRows = [
+        { label: 'Protein', value: ach.protein, unit: '%' },
+        { label: 'Fat', value: ach.fat, unit: '%' },
+        { label: 'Moisture', value: ach.moisture, unit: '%' },
+        { label: 'Carbohydrate', value: ach.carbs, unit: '%' },
+        { label: 'Solids', value: ach.solids, unit: '%' },
+        { label: 'Fat : solids ratio', value: ach.ratio, unit: '' },
+        { label: 'Group A protein share', value: ach.groupAShare, unit: '%' }
+      ];
+      $('achBody').innerHTML = achRows.map(function(r){
+        var chk = byLabel[r.label];
+        var valTxt = (r.value === null || r.value === undefined) ? 'n/a' : pcFmt(r.value) + (r.unit ? ' %' : '');
+        if (r.label === 'Fat : solids ratio' && isFinite(r.value)) valTxt = pcFmt(r.value, 3);
+        var mark = '—', cls = '';
+        if (chk){ mark = chk.ok ? '✓' : '✗'; cls = chk.ok ? 'pass' : 'fail'; }
+        return '<tr><td>' + r.label + '</td><td>' + valTxt + '</td><td>' + targetText(chk) + (chk ? (chk.isShare ? ' % of protein' : (chk.isRatio ? '' : ' %')) : '') + '</td><td class="mark ' + cls + '">' + mark + '</td></tr>';
+      }).join('');
+      // binding notes
+      var notes = [];
+      res.checks.forEach(function(chk){
+        if (!chk.binding) return;
+        if (chk.min !== null && Math.abs(chk.value - chk.min) <= (chk.isShare ? 1e-3 : 1e-4))
+          notes.push(chk.label + ' sits exactly at its minimum (' + pcFmt(chk.min) + (chk.isRatio ? '' : '%') + ') — this target is driving the cost.');
+        else if (chk.max !== null)
+          notes.push(chk.label + ' sits exactly at its maximum (' + pcFmt(chk.max) + (chk.isRatio ? '' : '%') + ') — this target is driving the cost.');
+      });
+      res.boundNotes.forEach(function(nb){ notes.push(nb); });
+      $('bindingBox').innerHTML = notes.length
+        ? '<h3 style="margin:0 0 6px;color:var(--emerald)">What is limiting the cost?</h3><ul class="notes">' + notes.map(function(nb){ return '<li>' + esc(nb) + '</li>'; }).join('') + '</ul>'
+        : '<p class="hint">No target or bound is exactly binding — the recipe is set by the cheapest ingredients alone.</p>';
+    } else {
+      opt.style.display = 'none'; inf.style.display = 'block';
+      banner.className = 'banner bad';
+      if (res.status === 'infeasible'){
+        banner.innerHTML = '<b>INFEASIBLE</b> — no blend of these ingredients, within their bounds, can meet all the targets at once.';
+        var html = '';
+        if (res.preChecks && res.preChecks.length){
+          html += '<p style="margin:8px 0 4px"><b>Checks that already fail on their own:</b></p><ul class="notes">'
+            + res.preChecks.map(function(p){ return '<li>' + esc(p) + '</li>'; }).join('') + '</ul>';
+        } else {
+          html += '<p class="notes" style="margin-top:8px">Each target is achievable on its own, so the clash is between targets in combination — for example a protein minimum that needs a wet ingredient while the moisture maximum forbids it. Loosen one target at a time to find the pair that conflicts.</p>';
+        }
+        html += '<p class="hint">Common causes: a nutrient minimum above what the richest ingredient can deliver at its maximum %; minimum percentages that already add to more than 100; a fat:solids or protein-share rule fighting a nutrient target.</p>';
+        inf.innerHTML = html;
+      } else {
+        banner.innerHTML = '<b>' + esc(res.status.toUpperCase()) + '</b> — the solver could not complete this problem. Check the inputs and try again.';
+        inf.innerHTML = '';
+      }
+    }
+    $('resultsCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  $('solveBtn').addEventListener('click', solve);
+
+  /* ---------- presets ---------- */
+  function loadPreset(key){
+    var p = PRESETS[key];
+    if (!p) return;
+    ingState = p.ingredients.map(ingFromData);
+    writeTargets(p.targets);
+    $('tBatch').value = p.batchKg;
+    hideBox('ingErrors'); hideBox('tgtErrors'); hideBox('csvErrors'); hideBox('csvStatus');
+    renderIngTable();
+    solve();
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('[data-preset]'), function(btn){
+    btn.addEventListener('click', function(){ loadPreset(btn.getAttribute('data-preset')); });
+  });
+
+  /* ---------- CSV import ---------- */
+  $('csvFile').addEventListener('change', function(){
+    var file = this.files && this.files[0];
+    if (!file) return;
+    var reader = new FileReader();
+    reader.onload = function(){
+      $('csvText').value = String(reader.result || '');
+      showOk('csvStatus', 'File "' + file.name + '" loaded into the box above — now choose Replace or Append.');
+    };
+    reader.onerror = function(){ showErrors('csvErrors', ['Could not read that file. Try pasting the contents instead.']); };
+    reader.readAsText(file);
+  });
+  function applyCSV(mode){
+    var parsed = parseIngredientsCSV($('csvText').value);
+    var errs = parsed.errors.map(function(e){ return (e.line ? 'Line ' + e.line + ': ' : '') + e.message; });
+    if (!parsed.rows.length){
+      showErrors('csvErrors', errs.length ? errs : ['No ingredient rows could be read.']);
+      hideBox('csvStatus');
+      return;
+    }
+    var incoming = parsed.rows.map(ingFromData);
+    if (mode === 'replace') ingState = incoming;
+    else ingState = ingState.concat(incoming);
+    var capped = '';
+    if (ingState.length > MAXING){ ingState = ingState.slice(0, MAXING); capped = ' Only the first ' + MAXING + ' ingredients were kept (the maximum).'; }
+    renderIngTable();
+    showErrors('csvErrors', errs);
+    showOk('csvStatus', 'Imported ' + parsed.rows.length + ' ingredient row(s) (' + mode + ').' + capped + (errs.length ? ' Some lines were skipped — see below.' : ''));
+    hideBox('ingErrors');
+  }
+  $('csvReplace').addEventListener('click', function(){ applyCSV('replace'); });
+  $('csvAppend').addEventListener('click', function(){ applyCSV('append'); });
+
+  /* ---------- outputs ---------- */
+  function summaryText(){
+    var res = lastResult;
+    if (!res) return '';
+    if (res.status !== 'optimal') return 'Linear Programming Recipe & Cost Optimizer — result: ' + res.status.toUpperCase();
+    var lines = [];
+    lines.push('Linear Programming Recipe & Cost Optimizer — least-cost recipe');
+    lines.push('Batch: ' + pcFmt(res.batchKg) + ' kg | Cost per kg: ' + money(res.costPerKg) + ' | Total batch cost: ' + money(res.totalCost));
+    lines.push('');
+    lines.push('Recipe:');
+    var order = res.x.map(function(v, i){ return i; }).sort(function(a, b2){ return res.x[b2] - res.x[a]; });
+    order.forEach(function(i){
+      var kg = res.x[i] / 100 * res.batchKg;
+      lines.push('- ' + res.ingredients[i].name + ': ' + pcFmt(res.x[i]) + '% (' + pcFmt(kg) + ' kg), cost ' + money(res.ingredients[i].cost * kg));
+    });
+    lines.push('');
+    var ach = res.achieved;
+    lines.push('Achieved composition: protein ' + pcFmt(ach.protein) + '%, fat ' + pcFmt(ach.fat) + '%, moisture ' + pcFmt(ach.moisture) + '%, carbs ' + pcFmt(ach.carbs) + '%, solids ' + pcFmt(ach.solids) + '%, fat:solids ' + pcFmt(ach.ratio, 3) + (ach.groupAShare === null ? '' : ', Group A protein share ' + pcFmt(ach.groupAShare) + '%'));
+    var bad = res.checks.filter(function(c){ return !c.ok; });
+    lines.push(bad.length ? 'Compliance: FAILED — ' + bad.map(function(c){ return c.label; }).join(', ') : 'Compliance: all targets met.');
+    return lines.join('\n');
+  }
+  $('copyBtn').addEventListener('click', function(){
+    var txt = summaryText();
+    function done(){ $('copyNote').textContent = 'Summary copied.'; }
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(done, function(){ fallback(); });
+    } else fallback();
+    function fallback(){
+      var ta = document.createElement('textarea');
+      ta.value = txt; document.body.appendChild(ta); ta.select();
+      try { document.execCommand('copy'); done(); } catch (e) { $('copyNote').textContent = 'Copy failed — select the results manually.'; }
+      document.body.removeChild(ta);
+    }
+  });
+  $('dlBtn').addEventListener('click', function(){
+    var res = lastResult;
+    if (!res || res.status !== 'optimal') return;
+    var lines = ['Ingredient,Percent of blend,kg in batch,Cost per kg,Cost contribution'];
+    res.x.forEach(function(pct, i){
+      var kg = pct / 100 * res.batchKg;
+      var name = '"' + String(res.ingredients[i].name).replace(/"/g, '""') + '"';
+      lines.push([name, pcFmt(pct), pcFmt(kg), money(res.ingredients[i].cost), money(res.ingredients[i].cost * kg)].join(','));
+    });
+    lines.push(['"TOTAL"', '100', pcFmt(res.batchKg), '', money(res.totalCost)].join(','));
+    var blob = new Blob([lines.join('\n')], { type: 'text/csv' });
+    var url = URL.createObjectURL(blob);
+    var a = document.createElement('a');
+    a.href = url; a.download = 'least-cost-recipe.csv';
+    document.body.appendChild(a); a.click();
+    document.body.removeChild(a);
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 500);
+  });
+
+  /* ---------- init ---------- */
+  loadPreset('burger');
+})();
+</script>
+</body>
+</html>
